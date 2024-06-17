@@ -10,7 +10,12 @@ def load_images_from_folder(folder):
         img = cv2.imread(os.path.join(folder, filename))
         if img is not None:
             images.append(img)
-            labels.append(int(filename.split('_')[0]))  # Assuming labels are part of the filename
+            # Extract label using regex to find the numeric part of the filename
+            match = re.search(r'\d+', filename)
+            if match:
+                labels.append(int(match.group()))
+            else:
+                labels.append(0)  # Default label if no numeric part is found
     return images, labels
 
 def preprocess_image(image, target_size):

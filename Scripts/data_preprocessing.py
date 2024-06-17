@@ -2,6 +2,7 @@
 import os
 import cv2
 import numpy as np
+import re
 
 def load_images_from_folder(folder):
     images = []

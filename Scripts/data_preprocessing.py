@@ -48,7 +48,7 @@ def load_images_from_folder_with_annotations(folder, annotations_file, num_sampl
     
     # Select random samples if num_samples is specified
     if num_samples:
-        annotations = annotations.sample(frac=1).reset_index(drop=True).iloc[:num_samples]
+        annotations = annotations.sample(frac=1).head(num_samples)
 
     for _, row in annotations.iterrows():
         img_path = os.path.join(folder, row['filename'])

@@ -1,22 +1,21 @@
-# src/preprocess.py
 import os
 import cv2
 import numpy as np
+import pandas as pd
 import re
 
-def load_images_from_folder(folder):
+def load_images_and_labels_from_folder(folder, csv_file):
     images = []
     labels = []
-    for filename in os.listdir(folder):
-        img = cv2.imread(os.path.join(folder, filename))
+    annotations = pd.read_csv(csv_file)
+
+    for _, row in annotations.iterrows():
+        img_path = os.path.join(folder, row['filename'])
+        img = cv2.imread(img_path)
         if img is not None:
             images.append(img)
-            # Extract label using regex to find the numeric part of the filename
-            match = re.search(r'\d+', filename)
-            if match:
-                labels.append(int(match.group()))
-            else:
-                labels.append(0)  # Default label if no numeric part is found
+            labels.append(row['label'])
+    
     return images, labels
 
 def preprocess_image(image, target_size):
@@ -24,9 +23,9 @@ def preprocess_image(image, target_size):
     image = image / 255.0  # Normalize to [0, 1]
     return image
 
-def load_and_preprocess_data(train_folder, test_folder, target_size):
-    train_images, train_labels = load_images_from_folder(train_folder)
-    test_images, test_labels = load_images_from_folder(test_folder)
+def load_and_preprocess_data(train_folder, train_csv, test_folder, test_csv, target_size):
+    train_images, train_labels = load_images_and_labels_from_folder(train_folder, train_csv)
+    test_images, test_labels = load_images_and_labels_from_folder(test_folder, test_csv)
     
     train_images = [preprocess_image(img, target_size) for img in train_images]
     test_images = [preprocess_image(img, target_size) for img in test_images]

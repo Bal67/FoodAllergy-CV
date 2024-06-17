@@ -52,13 +52,13 @@ def load_images_from_folder_with_annotations(folder, annotations_file, num_pairs
     selected_annotations = annotations.iloc[random_indices]
     
     # Iterate through each selected row in the annotations DataFrame
-    for _, row in selected_annotations.iterrows():
+    for index, row in selected_annotations.iterrows():
         img_path = os.path.join(folder, row['filename'])
         img = cv2.imread(img_path)
         if img is not None:
             images.append(img)
             labels.append(row['label'])  # Original label from CSV
-            allergen_labels.append(allergen_map.get(row['label'], 'Unknown'))  # Mapped allergen label
+            selected_annotations.loc[index, 'allergen_label'] = allergen_map.get(row['label'], 'Unknown')  # Mapped allergen label
     
     # Create DataFrame with selected annotations
     selected_annotations['allergen_label'] = allergen_labels

@@ -4,7 +4,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from sklearn.metrics import accuracy_score
-from ..Scripts.data_preprocessing import load_and_preprocess_data
+from Scripts.data_preprocessing import load_and_preprocess_data
 
 def main():
     # Paths

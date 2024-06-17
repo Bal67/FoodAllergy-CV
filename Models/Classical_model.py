@@ -2,15 +2,15 @@
 import numpy as np
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-from preprocess import load_and_preprocess_data
+from data_preprocessing import load_and_preprocess_data
 
 def main():
     # Paths
-    train_folder = '/content/drive/MyDrive/your_train_folder'
-    test_folder = '/content/drive/MyDrive/your_test_folder'
+    train_folder = '/content/drive/MyDrive/FoodAllergyData/train'
+    test_folder = '/content/drive/MyDrive/FoodAllergyData/test'
     
     # Parameters
-    target_size = (128, 128)  # Resize to this size
+    target_size = (224, 224)  # Resize to this size
     
     # Load and preprocess data
     train_images, train_labels, test_images, test_labels = load_and_preprocess_data(train_folder, test_folder, target_size)

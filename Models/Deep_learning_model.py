@@ -4,17 +4,17 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from sklearn.metrics import accuracy_score
-from preprocess import load_and_preprocess_data
+from data_preprocessing import load_and_preprocess_data
 
 def main():
     # Paths
-    train_folder = '/content/drive/MyDrive/your_train_folder'
-    test_folder = '/content/drive/MyDrive/your_test_folder'
-    model_save_path = '/content/drive/MyDrive/your_model_save_path/model.h5'
+    train_folder = '/content/drive/My Drive/FoodAllergyData/train'
+    test_folder = '/content/drive/My Drive/FoodAllergyData/test'
+    model_save_path = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Models/deep_learning_model.h5'
     
     # Parameters
-    target_size = (128, 128)  # Resize to this size
-    num_classes = 10  # Change as per your dataset
+    target_size = (224, 224)  
+    num_classes = 30  
     
     # Load and preprocess data
     train_images, train_labels, test_images, test_labels = load_and_preprocess_data(train_folder, test_folder, target_size)

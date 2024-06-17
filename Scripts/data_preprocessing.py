@@ -69,7 +69,7 @@ def preprocess_image(image, target_size):
 
 def load_and_preprocess_data(train_folder, test_folder,
                              train_annotations, test_annotations,
-                             target_size, num_train_samples=200, num_test_samples=200):
+                             target_size, num_train_samples=500, num_test_samples=500):
     train_images, train_labels, train_annotations_df = load_images_from_folder_with_annotations(train_folder, train_annotations, num_train_samples)
     test_images, test_labels, test_annotations_df = load_images_from_folder_with_annotations(test_folder, test_annotations, num_test_samples)
     

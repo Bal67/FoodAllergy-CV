@@ -4,8 +4,8 @@ from data_preprocessing import load_and_preprocess_data
 # Define paths and parameters
 train_folder = '/content/drive/MyDrive/FoodAllergyData/train'
 test_folder = '/content/drive/MyDrive/FoodAllergyData/test'
-train_annotations = '/content/drive/MyDrive/FoodAllergyData/annotations_train.csv'
-test_annotations = '/content/drive/MyDrive/FoodAllergyData/annotations_test.csv'
+train_annotations = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv'
+test_annotations = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv'
 target_size = (224, 224)
 
 # Load and preprocess data (excluding validation folder)

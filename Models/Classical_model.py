@@ -1,32 +1,29 @@
-# src/classical_ml.py
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-from data_preprocessing import load_and_preprocess_data
+from data_preprocessing import load_and_preprocess_data  # Adjust the import path as needed
 
 def main():
     # Paths
-    train_folder = '/content/drive/MyDrive/FoodAllergyData/train'
-    test_folder = '/content/drive/MyDrive/FoodAllergyData/test'
-    
-    # Parameters
-    target_size = (224, 224)  # Resize to this size
+    train_folder = '/content/drive/My Drive/FoodAllergyData/train'
+    test_folder = '/content/drive/My Drive/FoodAllergyData/test'
+    train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv'  
+    test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv'  
+    model_save_path = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Models/classical_model_naive.h5'  # Adjust the save path
     
     # Load and preprocess data
-    train_images, train_labels, test_images, test_labels = load_and_preprocess_data(train_folder, test_folder, target_size)
+    train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
+        train_folder, test_folder, train_annotations, test_annotations, target_size=(224, 224))  # Assuming target_size is (224, 224)
     
-    # Flatten images for classical ML
-    train_images_flat = train_images.reshape(len(train_images), -1)
-    test_images_flat = test_images.reshape(len(test_images), -1)
+    # Naive approach (example: Random classifier)
+    num_classes = len(np.unique(train_labels))  # Assuming train_labels contain class indices
     
-    # Train a RandomForest Classifier
-    clf = RandomForestClassifier(n_estimators=100)
-    clf.fit(train_images_flat, train_labels)
+    # Generate random predictions (naive approach)
+    np.random.seed(42)  # Ensure reproducibility
+    predictions = np.random.randint(0, num_classes, size=len(test_labels))
     
-    # Predict and evaluate
-    predictions = clf.predict(test_images_flat)
+    # Evaluate naive approach
     accuracy = accuracy_score(test_labels, predictions)
-    print(f'Classical ML Model Accuracy: {accuracy}')
-    
+    print(f'Naive Approach Accuracy: {accuracy}')
+
 if __name__ == "__main__":
     main()

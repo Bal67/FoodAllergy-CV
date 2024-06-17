@@ -78,21 +78,3 @@ def load_and_preprocess_data(train_folder, test_folder,
     
     return np.array(train_images), np.array(train_labels), np.array(test_images), np.array(test_labels), train_annotations_df, test_annotations_df
 
-if __name__ == "__main__":
-    # Example usage if running this script directly
-    train_folder = '/path/to/train_folder'
-    test_folder = '/path/to/test_folder'
-    train_annotations = '/path/to/train_annotations.csv'
-    test_annotations = '/path/to/test_annotations.csv'
-    target_size = (224, 224)
-
-    train_images, train_labels, test_images, test_labels, train_annotations_df, test_annotations_df = load_and_preprocess_data(
-        train_folder, test_folder, train_annotations, test_annotations, target_size=target_size)
-
-    # Optionally, you can print shapes to verify
-    print(f"Train images shape: {train_images.shape}")
-    print(f"Train labels shape: {train_labels.shape}")
-    print(f"Test images shape: {test_images.shape}")
-    print(f"Test labels shape: {test_labels.shape}")
-
-    print("Preprocessing completed and data saved.")

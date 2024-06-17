@@ -2,7 +2,6 @@ import os
 import cv2
 import pandas as pd
 import numpy as np
-import random
 
 def load_images_from_folder_with_annotations(folder, annotations_file, num_samples=None):
     if not os.path.exists(annotations_file):
@@ -46,10 +45,10 @@ def load_images_from_folder_with_annotations(folder, annotations_file, num_sampl
         'pizza': 'Gluten'
     }
     
-    # Select random samples if num_samples is specified
+    # Ensure num_samples is an integer
     if num_samples:
         num_samples = int(num_samples)
-        annotations = annotations.sample(n=num_samples)
+        annotations = annotations.sample(frac=1).reset_index(drop=True).iloc[:num_samples]
 
     for _, row in annotations.iterrows():
         img_path = os.path.join(folder, row['filename'])
@@ -70,8 +69,7 @@ def preprocess_image(image, target_size):
 
 def load_and_preprocess_data(train_folder, test_folder,
                              train_annotations, test_annotations,
-                             num_train_samples=None, num_test_samples=None,
-                             target_size=(224, 224)):
+                             target_size, num_train_samples=200, num_test_samples=200):
     train_images, train_labels, train_annotations_df = load_images_from_folder_with_annotations(train_folder, train_annotations, num_train_samples)
     test_images, test_labels, test_annotations_df = load_images_from_folder_with_annotations(test_folder, test_annotations, num_test_samples)
     
@@ -80,4 +78,3 @@ def load_and_preprocess_data(train_folder, test_folder,
     test_images = [preprocess_image(img, target_size) for img in test_images]
     
     return np.array(train_images), np.array(train_labels), np.array(test_images), np.array(test_labels), train_annotations_df, test_annotations_df
-

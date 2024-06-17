@@ -1,5 +1,10 @@
-# run_preprocessing.py
-from src.data_preprocessing import load_and_preprocess_data
+import sys
+import os
+
+# Ensure the Scripts directory is in the Python path
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '.')))
+
+from data_preprocessing import load_and_preprocess_data
 
 # Define the paths to your data folders
 train_folder = '/content/drive/My Drive/FoodAllergyData/train'

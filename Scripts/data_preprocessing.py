@@ -60,16 +60,14 @@ def preprocess_image(image, target_size):
     image = image / 255.0  # Normalize to [0, 1]
     return image
 
-def load_and_preprocess_data(train_folder, test_folder, validation_folder, 
-                             train_annotations, test_annotations, validation_annotations, 
+def load_and_preprocess_data(train_folder, test_folder,
+                             train_annotations, test_annotations,
                              target_size):
     train_images, train_labels, train_annotations_df = load_images_from_folder_with_annotations(train_folder, train_annotations)
     test_images, test_labels, test_annotations_df = load_images_from_folder_with_annotations(test_folder, test_annotations)
-    validation_images, validation_labels, validation_annotations_df = load_images_from_folder_with_annotations(validation_folder, validation_annotations)
     
     # Preprocess images
     train_images = [preprocess_image(img, target_size) for img in train_images]
     test_images = [preprocess_image(img, target_size) for img in test_images]
-    validation_images = [preprocess_image(img, target_size) for img in validation_images]
     
-    return np.array(train_images), np.array(train_labels), np.array(test_images), np.array(test_labels), np.array(validation_images), np.array(validation_labels), train_annotations_df, test_annotations_df, validation_annotations_df
+    return np.array(train_images), np.array(train_labels), np.array(test_images), np.array(test_labels), train_annotations_df, test_annotations_df

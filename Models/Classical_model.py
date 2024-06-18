@@ -36,9 +36,9 @@ test_images_scaled = scaler.transform(test_images_flat)
 
 # Parameter grid for GridSearchCV
 param_grid = {
-    'C': [0.001, 0.01, 0.1, 1, 10],
+    'C': [0.001, 0.01, 0.1, 1, 10, 1000],
     'gamma': [0.1, 1, 10],
-    'kernel': ['rbf']
+    'kernel': ['linear', 'rbf', 'poly', 'sigmoid']
 }
 
 # Create SVM classifier
@@ -54,6 +54,7 @@ print("Best Cross-validation Accuracy:", grid_search.best_score_)
 
 # Get the best model from grid search
 best_svm_clf = grid_search.best_estimator_
+
 
 # Predictions on training set
 train_pred = best_svm_clf.predict(train_images_scaled)

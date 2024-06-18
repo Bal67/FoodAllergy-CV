@@ -44,12 +44,13 @@ def main():
     test_folder = '/content/drive/My Drive/FoodAllergyData/test'
     train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv' 
     test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv' 
+
+       
+    target_size = (224, 224)
     
     # Load and preprocess the data
     X_train, y_train = load_and_preprocess_data(train_folder, train_annotations, test_folder, test_annotations, extract_features, target_size)
-    
-    target_size = (224, 224)
-
+ 
     # Train the model
     model = GradientBoostingClassifier()
     param_dist = {

@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder
 from sklearn.svm import SVC  # Import SVC from sklearn.svm
 from sklearn.metrics import accuracy_score, f1_score
@@ -29,15 +29,31 @@ label_encoder = LabelEncoder()
 train_labels_enc = label_encoder.fit_transform(train_labels)
 test_labels_enc = label_encoder.transform(test_labels)
 
-# Train the SVM Classifier
-svm_clf = SVC(kernel='linear', random_state=42)  # Use linear kernel for simplicity
-svm_clf.fit(train_images_flat, train_labels_enc)
+# Define parameter grid for GridSearchCV
+param_grid = {
+    'C': [0.1, 1, 10],
+    'gamma': [0.1, 1, 10],
+    'kernel': ['rbf']
+}
 
-# Evaluate the model
-train_pred = svm_clf.predict(train_images_flat)
-test_pred = svm_clf.predict(test_images_flat)
+# Create SVM classifier
+svm_clf = SVC()
 
-# Calculate accuracy and F1 scores
+# Perform grid search with cross-validation
+grid_search = GridSearchCV(svm_clf, param_grid, cv=3, scoring='accuracy', verbose=2)
+grid_search.fit(train_images_flat, train_labels_enc)
+
+# Print best parameters and best score
+print("Best Parameters:", grid_search.best_params_)
+print("Best Cross-validation Accuracy:", grid_search.best_score_)
+
+# Get the best model from grid search
+best_svm_clf = grid_search.best_estimator_
+
+# Evaluate the best model
+train_pred = best_svm_clf.predict(train_images_flat)
+test_pred = best_svm_clf.predict(test_images_flat)
+
 train_accuracy = accuracy_score(train_labels_enc, train_pred)
 test_accuracy = accuracy_score(test_labels_enc, test_pred)
 

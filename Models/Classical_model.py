@@ -29,18 +29,11 @@ label_encoder = LabelEncoder()
 train_labels_enc = label_encoder.fit_transform(train_labels)
 test_labels_enc = label_encoder.transform(test_labels)
 
-# Define parameter grid for GridSearchCV
-param_grid = {
-    'C': [0.1, 1, 10],
-    'gamma': [0.1, 1, 10],
-    'kernel': ['rbf']
-}
-
 # Create SVM classifier
 svm_clf = SVC()
 
 # Perform grid search with cross-validation
-grid_search = GridSearchCV(svm_clf, param_grid, cv=3, scoring='accuracy', verbose=2)
+grid_search = GridSearchCV(svm_clf, cv=3, scoring='accuracy', verbose=2)
 grid_search.fit(train_images_flat, train_labels_enc)
 
 # Print best parameters and best score

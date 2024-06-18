@@ -21,24 +21,28 @@ target_size = (64, 64)
 train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
         train_images, test_images, train_labels, test_labels, target_size)
 
+# Flatten or reshape images into 2D arrays
+train_images_flat = train_images.reshape(train_images.shape[0], -1)
+test_images_flat = test_images.reshape(test_images.shape[0], -1)
+
 # Encode the labels
 label_encoder = LabelEncoder()
-train_labels = label_encoder.fit_transform(train_labels)
-test_labels = label_encoder.transform(test_labels)
+train_labels_enc = label_encoder.fit_transform(train_labels)
+test_labels_enc = label_encoder.transform(test_labels)
 
 # Train the Random Forest Classifier
 clf = RandomForestClassifier(n_estimators=100, random_state=42)
-clf.fit(train_images, train_labels)
+clf.fit(train_images_flat, train_labels_enc)
 
 # Evaluate the model
 train_pred = clf.predict(train_images)
 test_pred = clf.predict(test_images)
 
-train_accuracy = accuracy_score(train_labels, train_pred)
-test_accuracy = accuracy_score(test_labels, test_pred)
+train_accuracy = accuracy_score(train_labels_enc, train_pred)
+test_accuracy = accuracy_score(test_labels_enc, test_pred)
 
-train_f1 = f1_score(train_labels, train_pred, average='macro')
-test_f1 = f1_score(test_labels, test_pred, average='macro')
+train_f1 = f1_score(train_labels_enc, train_pred, average='macro')
+test_f1 = f1_score(test_labels_enc, test_pred, average='macro')
 
 print(f'Train Accuracy: {train_accuracy:.2f}')
 print(f'Test Accuracy: {test_accuracy:.2f}')

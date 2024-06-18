@@ -10,8 +10,8 @@ def main():
     # Paths
     train_folder = '/content/drive/My Drive/FoodAllergyData/train'
     test_folder = '/content/drive/My Drive/FoodAllergyData/test'
-    train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv'  # Adjust as per your file structure
-    test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv'  # Adjust as per your file structure
+    train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv' 
+    test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv'  
     model_save_path = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Models/deep_learning_model.h5'
     
     # Parameters
@@ -19,7 +19,8 @@ def main():
     num_classes = 30  
     
     # Load and preprocess data
-    train_images, train_labels, test_images, test_labels = load_and_preprocess_data(train_folder, test_folder, target_size)
+    train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
+        train_folder, test_folder, train_annotations, test_annotations, target_size)
     
     # Convert labels to categorical
     train_labels = to_categorical(train_labels, num_classes)

@@ -3,7 +3,7 @@ import cv2
 import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-from Scripts.data_preprocessing import load_and_preprocess_data
+from data_preprocessing import load_and_preprocess_data
 
 def extract_features(image):
     # Convert the image to HSV color space

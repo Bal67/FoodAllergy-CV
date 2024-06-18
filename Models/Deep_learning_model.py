@@ -51,7 +51,7 @@ def main():
         Flatten(),
         Dense(512, activation='relu'),
         Dropout(0.5),
-        Dense(num_classes, activation='softmax')
+        Dense(num_classes, activation='sigmoid')
     ])
     
     # Compile the model

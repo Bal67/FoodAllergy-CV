@@ -1,13 +1,15 @@
 import numpy as np
 import cv2
-from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import RandomizedSearchCV
-from data_preprocessing import load_and_preprocess_data
+from Scripts.data_preprocessing import load_and_preprocess_data
 from skimage.feature import local_binary_pattern
 from skimage.color import rgb2gray
-from scipy.stats import randint
 from skimage.filters import sobel
+from scipy.stats import randint
+from joblib import Parallel, delayed
+import multiprocessing
 
 def extract_features(image):
     # Convert the image to 8-bit unsigned integer format
@@ -53,21 +55,22 @@ def main():
         train_folder, test_folder, train_annotations, test_annotations, target_size
     )
     
-    # Extract features from images
-    train_features = np.array([extract_features(img) for img in train_images])
-    test_features = np.array([extract_features(img) for img in test_images])
+    # Extract features from images using multiprocessing
+    num_cores = multiprocessing.cpu_count()
+    train_features = np.array(Parallel(n_jobs=num_cores)(delayed(extract_features)(img) for img in train_images))
+    test_features = np.array(Parallel(n_jobs=num_cores)(delayed(extract_features)(img) for img in test_images))
     
     # Define the parameter distribution for RandomizedSearchCV
     param_dist = {
-        'n_estimators': randint(50, 200),
+        'n_estimators': randint(50, 100),
         'max_depth': [3, 5, 7],
         'min_samples_split': randint(2, 10),
-        'min_samples_leaf': randint(1, 10)
+        'min_samples_leaf': randint(1, 5)
     }
     
-    # Train a Gradient Boosting classifier with RandomizedSearchCV
-    classifier = GradientBoostingClassifier(random_state=42)
-    random_search = RandomizedSearchCV(estimator=classifier, param_distributions=param_dist, n_iter=50, cv=2, n_jobs=-1, verbose=2)
+    # Train a Random Forest classifier with RandomizedSearchCV
+    classifier = RandomForestClassifier(random_state=42)
+    random_search = RandomizedSearchCV(estimator=classifier, param_distributions=param_dist, n_iter=20, cv=2, n_jobs=-1, verbose=2)
     random_search.fit(train_features, train_labels)
     
     # Use the best estimator from RandomizedSearchCV

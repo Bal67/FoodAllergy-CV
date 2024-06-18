@@ -28,10 +28,11 @@ def train_model():
     train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv' 
     test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv'  
     model_save_path = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Models/deep_learning_model.h5'
-
-    # Load and preprocess the data
-    X_train, y_train = load_and_preprocess_data(train_folder, train_annotations)
-    X_test, y_test = load_and_preprocess_data(test_folder, test_annotations)
+    
+    target_size = (224, 224)
+    
+    train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
+        train_folder, test_folder, train_annotations, test_annotations, target_size)
 
     # Extract features
     X_train = np.array([extract_features(image) for image in X_train])
@@ -50,4 +51,3 @@ def train_model():
 
 if __name__ == '__main__':
     train_model()
-    

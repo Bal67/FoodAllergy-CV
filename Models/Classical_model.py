@@ -49,6 +49,8 @@ def main():
     X_train, y_train = load_and_preprocess_data(train_folder, train_annotations, extract_features)
     X_test, y_test = load_and_preprocess_data(test_folder, test_annotations, extract_features)
     
+    target_size = (224, 224)
+
     # Train the model
     model = GradientBoostingClassifier()
     param_dist = {

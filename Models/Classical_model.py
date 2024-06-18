@@ -1,43 +1,21 @@
 import numpy as np
+import pandas as pd
 import cv2
+from sklearn.preprocessing import LabelEncoder
+from sklearn.model_selection import train_test_split, KFold
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
-from sklearn.model_selection import RandomizedSearchCV
+from tensorflow.keras.applications import ResNet50
+from tensorflow.keras.applications.resnet50 import preprocess_input
+from tensorflow.keras.utils import to_categorical
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from data_preprocessing import load_and_preprocess_data
-from skimage.feature import local_binary_pattern
-from skimage.color import rgb2gray
-from skimage.filters import sobel
-from scipy.stats import randint
-from joblib import Parallel, delayed
-import multiprocessing
 
-def extract_features(image):
-    # Convert the image to 8-bit unsigned integer format
-    if image.dtype != np.uint8:
-        image = (image * 255).astype(np.uint8)
-    
-    # Convert the image to HSV color space
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    hist = cv2.calcHist([hsv], [0, 1, 2], None, [8, 8, 8], [0, 180, 0, 256, 0, 256])
-    cv2.normalize(hist, hist)
-    
-    # Convert the image to grayscale
-    gray = rgb2gray(image)
-    lbp = local_binary_pattern(gray, P=8, R=1, method='uniform')
-    lbp_hist, _ = np.histogram(lbp.ravel(), bins=np.arange(0, 27), range=(0, 26))
-    lbp_hist = lbp_hist.astype("float")
-    lbp_hist /= (lbp_hist.sum() + 1e-6)
-    
-    # Edge detection using Sobel filter
-    edges = sobel(gray)
-    edge_hist, _ = np.histogram(edges.ravel(), bins=np.arange(0, 256), range=(0, 255))
-    edge_hist = edge_hist.astype("float")
-    edge_hist /= (edge_hist.sum() + 1e-6)
-
-    # Combine features
-    features = np.concatenate((hist.flatten(), lbp_hist, edge_hist))
-    
-    return features
+def extract_features_resnet(image):
+    image = cv2.resize(image, (224, 224))
+    image = preprocess_input(image)
+    features = resnet_model.predict(np.expand_dims(image, axis=0))
+    return features.flatten()
 
 
 def main():
@@ -47,41 +25,58 @@ def main():
     train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv' 
     test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv' 
     
-  # Parameters
+# Parameters
     target_size = (224, 224)
+    num_classes = 30  # Number of categories
     
     # Load and preprocess data
     train_images, train_labels, test_images, test_labels, train_annotations_df, test_annotations_df = load_and_preprocess_data(
         train_folder, test_folder, train_annotations, test_annotations, target_size
     )
     
-    # Extract features from images using multiprocessing
-    num_cores = multiprocessing.cpu_count()
-    train_features = np.array(Parallel(n_jobs=num_cores)(delayed(extract_features)(img) for img in train_images))
-    test_features = np.array(Parallel(n_jobs=num_cores)(delayed(extract_features)(img) for img in test_images))
+    # Convert labels to integers
+    label_encoder = LabelEncoder()
+    train_labels_encoded = label_encoder.fit_transform(train_labels)
+    test_labels_encoded = label_encoder.transform(test_labels)
     
-    # Define the parameter distribution for RandomizedSearchCV
-    param_dist = {
-        'n_estimators': randint(50, 100),
-        'max_depth': [3, 5, 7],
-        'min_samples_split': randint(2, 10),
-        'min_samples_leaf': randint(1, 5)
-    }
+    # Normalize image data
+    train_images = np.array(train_images) / 255.0
+    test_images = np.array(test_images) / 255.0
     
-    # Train a Random Forest classifier with RandomizedSearchCV
-    classifier = RandomForestClassifier(random_state=42)
-    random_search = RandomizedSearchCV(estimator=classifier, param_distributions=param_dist, n_iter=20, cv=2, n_jobs=-1, verbose=2)
-    random_search.fit(train_features, train_labels)
+    # Initialize ResNet model for feature extraction
+    global resnet_model
+    resnet_model = ResNet50(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
+
+    # Extract features using ResNet
+    train_features = np.array([extract_features_resnet(img) for img in train_images])
+    test_features = np.array([extract_features_resnet(img) for img in test_images])
     
-    # Use the best estimator from RandomizedSearchCV
-    best_classifier = random_search.best_estimator_
+    # Cross-validation setup
+    kf = KFold(n_splits=5, shuffle=True, random_state=42)
+    accuracies = []
+
+    for train_index, val_index in kf.split(train_features):
+        X_train, X_val = train_features[train_index], train_features[val_index]
+        y_train, y_val = train_labels_encoded[train_index], train_labels_encoded[val_index]
+
+        # Initialize and train the model
+        model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42)
+        model.fit(X_train, y_train)
+
+        # Validate the model
+        y_val_pred = model.predict(X_val)
+        accuracies.append(accuracy_score(y_val, y_val_pred))
+
+    print(f'Mean Cross-Validation Accuracy: {np.mean(accuracies)}')
     
-    # Make predictions
-    predictions = best_classifier.predict(test_features)
+    # Train final model on the entire training set
+    final_model = RandomForestClassifier(n_estimators=100, max_depth=5, random_state=42)
+    final_model.fit(train_features, train_labels_encoded)
     
-    # Evaluate the model
-    accuracy = accuracy_score(test_labels, predictions)
-    print(f'Naive Approach Accuracy: {accuracy}')
+    # Evaluate the model on the test set
+    test_pred = final_model.predict(test_features)
+    test_accuracy = accuracy_score(test_labels_encoded, test_pred)
+    print(f'Test Accuracy: {test_accuracy}')
 
 if __name__ == "__main__":
     main()

@@ -30,10 +30,10 @@ def main():
     test_labels_encoded = label_encoder.transform(test_labels)
 
     # Convert labels to categorical
-    train_labels = to_categorical(train_labels, num_classes)
-    test_labels = to_categorical(test_labels, num_classes)
+    train_labels_categorical = to_categorical(train_labels_encoded, num_classes)
+    test_labels_categorical = to_categorical(test_labels_encoded, num_classes)
     
-    #Normalize image data
+    # Normalize image data
     train_images = np.array(train_images) / 255.0
     test_images = np.array(test_images) / 255.0
     

@@ -24,6 +24,10 @@ target_size = (64, 64)
 train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
     train_images_path, test_images_path, train_labels_path, test_labels_path, target_size)
 
+# Check shapes of loaded images
+print(f'Shape of train images: {train_images.shape}')
+print(f'Shape of test images: {test_images.shape}')
+
 # Encode the labels
 label_encoder = LabelEncoder()
 train_labels_enc = label_encoder.fit_transform(train_labels)
@@ -33,9 +37,16 @@ test_labels_enc = label_encoder.transform(test_labels)
 train_labels_categorical = to_categorical(train_labels_enc)
 test_labels_categorical = to_categorical(test_labels_enc)
 
-# Reshape images for VGG16
-train_images_cnn = np.repeat(train_images.reshape(train_images.shape[0], 64, 64, 1), 3, axis=3)
-test_images_cnn = np.repeat(test_images.reshape(test_images.shape[0], 64, 64, 1), 3, axis=3)
+# Ensure the image data is in the correct shape for VGG16
+if len(train_images.shape) != 4 or train_images.shape[3] != 3:
+    train_images_cnn = np.repeat(train_images.reshape(train_images.shape[0], 64, 64, 1), 3, axis=3)
+else:
+    train_images_cnn = train_images
+
+if len(test_images.shape) != 4 or test_images.shape[3] != 3:
+    test_images_cnn = np.repeat(test_images.reshape(test_images.shape[0], 64, 64, 1), 3, axis=3)
+else:
+    test_images_cnn = test_images
 
 # Data Augmentation
 datagen = ImageDataGenerator(
@@ -81,6 +92,7 @@ model.fit(datagen.flow(train_images_cnn, train_labels_categorical, batch_size=32
 test_loss, test_accuracy = model.evaluate(test_images_cnn, test_labels_categorical)
 test_pred = model.predict(test_images_cnn)
 test_f1 = f1_score(test_labels_enc, np.argmax(test_pred, axis=1), average='macro')
+
 
 print(f'Test Accuracy: {test_accuracy:.2f}')
 print(f'Test F1-score: {test_f1:.2f}')

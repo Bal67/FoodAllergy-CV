@@ -2,7 +2,7 @@ import os
 import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split, GridSearchCV
-from sklearn.preprocessing import LabelEncoder
+from sklearn.preprocessing import LabelEncoder, MinMaxScaler
 from sklearn.svm import SVC  # Import SVC from sklearn.svm
 from sklearn.metrics import accuracy_score, f1_score
 from data_preprocessing import load_and_preprocess_data
@@ -24,16 +24,28 @@ train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess
 train_images_flat = train_images.reshape(train_images.shape[0], -1)
 test_images_flat = test_images.reshape(test_images.shape[0], -1)
 
+# Normalize pixel values to range [0, 1]
+scaler = MinMaxScaler()
+train_images_flat_scaled = scaler.fit_transform(train_images_flat)
+test_images_flat_scaled = scaler.transform(test_images_flat)
+
 # Encode the labels
 label_encoder = LabelEncoder()
 train_labels_enc = label_encoder.fit_transform(train_labels)
 test_labels_enc = label_encoder.transform(test_labels)
 
+# Define parameter grid for GridSearchCV
+param_grid = {
+    'C': [0.1, 1, 10],
+    'gamma': [0.1, 1, 10],
+    'kernel': ['rbf']
+}
+
 # Create SVM classifier
 svm_clf = SVC()
 
 # Perform grid search with cross-validation
-grid_search = GridSearchCV(svm_clf, cv=3, scoring='accuracy', verbose=2)
+grid_search = GridSearchCV(svm_clf, param_grid, cv=3, scoring='accuracy', verbose=2)
 grid_search.fit(train_images_flat, train_labels_enc)
 
 # Print best parameters and best score

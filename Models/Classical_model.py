@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.svm import SVC  # Import SVC from sklearn.svm
 from sklearn.metrics import accuracy_score, f1_score
 from data_preprocessing import load_and_preprocess_data
 
@@ -16,10 +16,9 @@ model_save_path = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Models/
 
 target_size = (64, 64)
 
-# Preprocess the data
- # Load and preprocess data
+# Load and preprocess data
 train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
-        train_images, test_images, train_labels, test_labels, target_size)
+    train_images, test_images, train_labels, test_labels, target_size)
 
 # Flatten or reshape images into 2D arrays
 train_images_flat = train_images.reshape(train_images.shape[0], -1)
@@ -30,14 +29,15 @@ label_encoder = LabelEncoder()
 train_labels_enc = label_encoder.fit_transform(train_labels)
 test_labels_enc = label_encoder.transform(test_labels)
 
-# Train the Random Forest Classifier
-clf = RandomForestClassifier(n_estimators=100, random_state=42)
-clf.fit(train_images_flat, train_labels_enc)
+# Train the SVM Classifier
+svm_clf = SVC(kernel='linear', random_state=42)  # Use linear kernel for simplicity
+svm_clf.fit(train_images_flat, train_labels_enc)
 
 # Evaluate the model
-train_pred = clf.predict(train_images)
-test_pred = clf.predict(test_images)
+train_pred = svm_clf.predict(train_images_flat)
+test_pred = svm_clf.predict(test_images_flat)
 
+# Calculate accuracy and F1 scores
 train_accuracy = accuracy_score(train_labels_enc, train_pred)
 test_accuracy = accuracy_score(test_labels_enc, test_pred)
 

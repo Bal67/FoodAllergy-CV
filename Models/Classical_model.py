@@ -1,6 +1,6 @@
 import numpy as np
 from sklearn.metrics import accuracy_score
-from Scripts.data_preprocessing import load_and_preprocess_data  # Adjust the import path as needed
+from data_preprocessing import load_and_preprocess_data  # Adjust the import path as needed
 
 def main():
     # Paths

@@ -19,15 +19,15 @@ def main():
     target_size = (224, 224)  
     num_classes = 30  
     
+    # Load and preprocess data
+    train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
+        train_folder, test_folder, train_annotations, test_annotations, target_size)
+    
     # Encode labels to integers
     label_encoder = LabelEncoder()
     train_labels_encoded = label_encoder.fit_transform(train_labels)
     test_labels_encoded = label_encoder.transform(test_labels)
 
-    # Load and preprocess data
-    train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
-        train_folder, test_folder, train_annotations, test_annotations, target_size)
-    
     # Convert labels to categorical
     train_labels = to_categorical(train_labels, num_classes)
     test_labels = to_categorical(test_labels, num_classes)

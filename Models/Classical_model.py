@@ -3,7 +3,10 @@ import cv2
 import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
+from sklearn.model_selection import GridSearchCV
 from data_preprocessing import load_and_preprocess_data
+from skimage.feature import local_binary_pattern
+from skimage.color import rgb2gray
 
 def extract_features(image):
     # Convert the image to 8-bit unsigned integer format
@@ -16,7 +19,19 @@ def extract_features(image):
                         [0, 180, 0, 256, 0, 256])
     # Normalize the histogram
     cv2.normalize(hist, hist)
-    return hist.flatten()
+    
+    # Convert the image to grayscale
+    gray = rgb2gray(image)
+    # Compute LBP features
+    lbp = local_binary_pattern(gray, P=8, R=1, method='uniform')
+    (lbp_hist, _) = np.histogram(lbp.ravel(), bins=np.arange(0, 27), range=(0, 26))
+    lbp_hist = lbp_hist.astype("float")
+    lbp_hist /= (lbp_hist.sum() + 1e-6)
+
+    # Combine color histogram and LBP features
+    features = np.concatenate((hist.flatten(), lbp_hist))
+    
+    return features
 
 def main():
     # Paths
@@ -37,12 +52,24 @@ def main():
     train_features = np.array([extract_features(img) for img in train_images])
     test_features = np.array([extract_features(img) for img in test_images])
     
-    # Train a Random Forest classifier
-    classifier = RandomForestClassifier(n_estimators=100, random_state=42)
-    classifier.fit(train_features, train_labels)
+# Define the parameter grid for GridSearchCV
+    param_grid = {
+        'n_estimators': [100, 200, 300],
+        'max_depth': [None, 10, 20, 30],
+        'min_samples_split': [2, 5, 10],
+        'min_samples_leaf': [1, 2, 4]
+    }
+    
+    # Train a Random Forest classifier with GridSearchCV
+    classifier = RandomForestClassifier(random_state=42)
+    grid_search = GridSearchCV(estimator=classifier, param_grid=param_grid, cv=3, n_jobs=-1, verbose=2)
+    grid_search.fit(train_features, train_labels)
+    
+    # Use the best estimator from GridSearchCV
+    best_classifier = grid_search.best_estimator_
     
     # Make predictions
-    predictions = classifier.predict(test_features)
+    predictions = best_classifier.predict(test_features)
     
     # Evaluate the model
     accuracy = accuracy_score(test_labels, predictions)

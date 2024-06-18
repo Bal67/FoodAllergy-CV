@@ -5,7 +5,7 @@ from PIL import Image
 import cv2
 from lime import lime_image
 from tensorflow.keras.models import load_model
-from explainability import explain_with_lime, explain_with_gradcam
+
 
 # Load the CNN model
 @st.cache(allow_output_mutation=True)
@@ -48,13 +48,6 @@ def main():
             # Display prediction
             st.success(f'Prediction: {predicted_class}')
 
-            # Explainability: LIME
-            st.subheader('LIME Explanation')
-            explain_with_lime(cnn_model, processed_image)
-
-            # Explainability: Grad-CAM
-            st.subheader('Grad-CAM Visualization')
-            explain_with_gradcam(cnn_model, processed_image)
 
 # Run the app
 if __name__ == '__main__':

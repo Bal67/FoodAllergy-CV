@@ -48,7 +48,7 @@ test_images_scaled = scaler.transform(test_images_flat)
 
 # Parameter grid for GridSearchCV
 param_grid = {
-    'C': [0.001, 0.01, 0.1, 1, 10],
+    'C': [0.001, 0.01, 0.1],
     'gamma': [0.1, 1, 10],
     'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
     'class_weight': [None, 'balanced']

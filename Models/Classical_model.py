@@ -22,38 +22,32 @@ def extract_features(image):
     return features
 
 def train_model():
-    # Load and preprocess the data
-    X_train, X_test, y_train, y_test = load_and_preprocess_data()
-    # Extract features from the training images
-    X_train_features = np.array([extract_features(image) for image in X_train])
-    # Train a Gradient Boosting classifier
-    model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3)
-    model.fit(X_train_features, y_train)
-    # Extract features from the test images
-    X_test_features = np.array([extract_features(image) for image in X_test])
-    # Evaluate the model
-    y_pred = model.predict(X_test_features)
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f'Accuracy: {accuracy}')
-    return model
+    # Paths
+    train_folder = '/content/drive/My Drive/FoodAllergyData/train'
+    test_folder = '/content/drive/My Drive/FoodAllergyData/test'
+    train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv' 
+    test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv'  
+    model_save_path = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Models/deep_learning_model.h5'
 
-def hyperparameter_tuning():
     # Load and preprocess the data
-    X_train, _, y_train, _ = load_and_preprocess_data()
-    # Extract features from the training images
-    X_train_features = np.array([extract_features(image) for image in X_train])
-    # Define the hyperparameter grid
-    param_dist = {
-        'n_estimators': randint(50, 200),
-        'learning_rate': [0.01, 0.1, 0.5],
-        'max_depth': [3, 5, 7]
-    }
-    # Train a Gradient Boosting classifier with hyperparameter tuning
+    X_train, y_train = load_and_preprocess_data(train_folder, train_annotations)
+    X_test, y_test = load_and_preprocess_data(test_folder, test_annotations)
+
+    # Extract features
+    X_train = np.array([extract_features(image) for image in X_train])
+    X_test = np.array([extract_features(image) for image in X_test])
+
+    # Train the model
     model = GradientBoostingClassifier()
-    random_search = RandomizedSearchCV(model, param_distributions=param_dist, n_iter=20, cv=3)
-    random_search.fit(X_train_features, y_train)
-    print(f'Best hyperparameters: {random_search.best_params_}')
+    model.fit(X_train, y_train)
+
+    # Evaluate the model
+    y_pred = model.predict(X_test)
+    accuracy = accuracy_score(y_test, y_pred)
+    print('Accuracy:', accuracy)
+
+    return model
 
 if __name__ == '__main__':
     train_model()
-    # hyperparameter_tuning()
+    

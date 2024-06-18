@@ -6,20 +6,18 @@ from sklearn.svm import SVC
 from data_preprocessing import load_and_preprocess_data  # Adjust the import path as needed
 
 def extract_features(image):
-    # Resize image to a fixed size
-    image = cv2.resize(image, (128, 128))
+    # Ensure the image is in uint8 format
+    if image.dtype != np.uint8:
+        image = (image * 255).astype(np.uint8)
     
     # Convert to grayscale
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     
-    # Extract HOG features
+    # Extract histogram of oriented gradients (HOG) features
     hog = cv2.HOGDescriptor()
     h = hog.compute(gray)
     
-    # Flatten the HOG features
-    features = h.flatten()
-    
-    return features
+    return h.flatten()
 
 def main():
     # Paths

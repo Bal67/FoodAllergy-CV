@@ -10,8 +10,8 @@ def main():
     # Paths
     train_folder = '/content/drive/My Drive/FoodAllergyData/train'
     test_folder = '/content/drive/My Drive/FoodAllergyData/test'
-    train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/train_annotations.csv'  # Adjust as per your file structure
-    test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/test_annotations.csv'  # Adjust as per your file structure
+    train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv'  # Adjust as per your file structure
+    test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv'  # Adjust as per your file structure
     model_save_path = '/content/drive/MyDrive/FoodAllergyData/FoodAllergy-CV/Models/deep_learning_model.h5'
     
     # Parameters

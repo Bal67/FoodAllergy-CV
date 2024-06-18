@@ -6,6 +6,7 @@ from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from data_preprocessing import load_and_preprocess_data
 
 def main():
@@ -39,7 +40,14 @@ def main():
     
     # Split the data into training and validation sets
     X_train, X_val, y_train, y_val = train_test_split(train_images, train_labels_categorical, test_size=0.2, random_state=42)
-    
+        
+    # Data augmentation
+    datagen = ImageDataGenerator(
+        rotation_range=20,
+        width_shift_range=0.2,
+        height_shift_range=0.2,
+        horizontal_flip=True)
+
     # Build the model
     model = Sequential([
         Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
@@ -48,18 +56,24 @@ def main():
         MaxPooling2D((2, 2)),
         Conv2D(128, (3, 3), activation='relu'),
         MaxPooling2D((2, 2)),
+        Conv2D(128, (3, 3), activation='relu'),  # added layer
+        MaxPooling2D((2, 2)),  # added layer
         Flatten(),
-        Dense(512, activation='relu'),
-        Dropout(0.5),
-        Dense(num_classes, activation='sigmoid')
+        Dropout(0.5),  # added layer
+        Dense(512, activation='relu'),  # added layer
+        Dense(num_classes, activation='softmax')
     ])
-    
+
     # Compile the model
-    model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
-    
-    # Train the model
-    model.fit(X_train, y_train, epochs=5, batch_size=32, validation_data=(X_val, y_val))
-    
+    model.compile(loss='categorical_crossentropy',
+                optimizer=Adam(lr=0.001),  # adjusted learning rate
+                metrics=['accuracy'])
+
+    # Fit the model
+    history = model.fit(datagen.flow(X_train, y_train, batch_size=32),
+                        epochs=50,  # increased epochs
+                        validation_data=(X_val, y_val))
+        
     # Evaluate the model on the test set
     test_loss, test_accuracy = model.evaluate(test_images, test_labels_categorical)
     print(f'Deep Learning Test Accuracy: {test_accuracy}')

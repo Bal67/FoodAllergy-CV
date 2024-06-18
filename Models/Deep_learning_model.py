@@ -58,11 +58,11 @@ def main():
     model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
     
     # Train the model
-    model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_val))
+    model.fit(X_train, y_train, epochs=50, batch_size=32, validation_data=(X_val, y_val))
     
     # Evaluate the model on the test set
     test_loss, test_accuracy = model.evaluate(test_images, test_labels_categorical)
-    print(f'Test Accuracy: {test_accuracy}')
+    print(f'Deep Learning Test Accuracy: {test_accuracy}')
 
 if __name__ == "__main__":
     main()

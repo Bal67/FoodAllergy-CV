@@ -10,62 +10,50 @@ from scipy.stats import randint
 from skimage.filters import sobel
 
 def extract_features(image):
-    # Convert the image to 8-bit unsigned integer format
-    if image.dtype != np.uint8:
-        image = (image * 255).astype(np.uint8)
-    
-    # Convert the image to HSV color space
-    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    hist = cv2.calcHist([hsv], [0, 1, 2], None, [8, 8, 8], [0, 180, 0, 256, 0, 256])
-    cv2.normalize(hist, hist)
-    
     # Convert the image to grayscale
-    gray = rgb2gray(image)
-    lbp = local_binary_pattern(gray, P=8, R=1, method='uniform')
-    lbp_hist, _ = np.histogram(lbp.ravel(), bins=np.arange(0, 27), range=(0, 26))
-    lbp_hist = lbp_hist.astype("float")
-    lbp_hist /= (lbp_hist.sum() + 1e-6)
-    
-    # Edge detection using Sobel filter
-    edges = sobel(gray)
-    edge_hist, _ = np.histogram(edges.ravel(), bins=np.arange(0, 256), range=(0, 255))
-    edge_hist = edge_hist.astype("float")
-    edge_hist /= (edge_hist.sum() + 1e-6)
-
-    # Combine features
-    features = np.concatenate((hist.flatten(), lbp_hist, edge_hist))
-    
+    gray_image = rgb2gray(image)
+    # Extract the LBP features
+    lbp = local_binary_pattern(gray_image, 8, 1, method='uniform')
+    # Extract the Sobel features
+    sobel_x = sobel(gray_image, axis=0)
+    sobel_y = sobel(gray_image, axis=1)
+    # Concatenate the features
+    features = np.hstack([lbp.ravel(), sobel_x.ravel(), sobel_y.ravel()])
     return features
 
-
-def main():
-    # Paths
-    train_folder = '/content/drive/My Drive/FoodAllergyData/train'
-    test_folder = '/content/drive/My Drive/FoodAllergyData/test'
-    train_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_train.csv' 
-    test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv' 
-
-       
-    target_size = (224, 224)
-    
+def train_model():
     # Load and preprocess the data
-    X_train, y_train = load_and_preprocess_data(train_folder, train_annotations, test_folder, test_annotations, extract_features, target_size)
- 
-    # Train the model
-    model = GradientBoostingClassifier()
+    X_train, X_test, y_train, y_test = load_and_preprocess_data()
+    # Extract features from the training images
+    X_train_features = np.array([extract_features(image) for image in X_train])
+    # Train a Gradient Boosting classifier
+    model = GradientBoostingClassifier(n_estimators=100, learning_rate=0.1, max_depth=3)
+    model.fit(X_train_features, y_train)
+    # Extract features from the test images
+    X_test_features = np.array([extract_features(image) for image in X_test])
+    # Evaluate the model
+    y_pred = model.predict(X_test_features)
+    accuracy = accuracy_score(y_test, y_pred)
+    print(f'Accuracy: {accuracy}')
+    return model
+
+def hyperparameter_tuning():
+    # Load and preprocess the data
+    X_train, _, y_train, _ = load_and_preprocess_data()
+    # Extract features from the training images
+    X_train_features = np.array([extract_features(image) for image in X_train])
+    # Define the hyperparameter grid
     param_dist = {
         'n_estimators': randint(50, 200),
-        'max_depth': randint(1, 10),
-        'learning_rate': [0.1, 0.01, 0.001]
+        'learning_rate': [0.01, 0.1, 0.5],
+        'max_depth': [3, 5, 7]
     }
-    random_search = RandomizedSearchCV(model, param_distributions=param_dist, n_iter=10, cv=5)
-    random_search.fit(X_train, y_train)
-
-    # Evaluate the model
-    X_test, y_test = load_and_preprocess_data(test_folder, test_annotations, test_folder, test_annotations, extract_features, target_size)
-    y_pred = random_search.predict(X_test)
-    accuracy = accuracy_score(y_test, y_pred)
-    print(f'Naive Accuracy: {accuracy}')
+    # Train a Gradient Boosting classifier with hyperparameter tuning
+    model = GradientBoostingClassifier()
+    random_search = RandomizedSearchCV(model, param_distributions=param_dist, n_iter=20, cv=3)
+    random_search.fit(X_train_features, y_train)
+    print(f'Best hyperparameters: {random_search.best_params_}')
 
 if __name__ == '__main__':
-    main()
+    train_model()
+    # hyperparameter_tuning()

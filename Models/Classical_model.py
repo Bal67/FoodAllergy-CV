@@ -6,6 +6,9 @@ from sklearn.metrics import accuracy_score
 from data_preprocessing import load_and_preprocess_data
 
 def extract_features(image):
+    # Convert the image to 8-bit unsigned integer format
+    if image.dtype != np.uint8:
+        image = (image * 255).astype(np.uint8)
     # Convert the image to HSV color space
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     # Compute the color histogram

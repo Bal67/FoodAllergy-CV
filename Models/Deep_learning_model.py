@@ -4,6 +4,7 @@ from tensorflow.keras.utils import to_categorical
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
 from sklearn.metrics import accuracy_score
+from sklearn.preprocessing import LabelEncoder
 from data_preprocessing import load_and_preprocess_data
 
 def main():
@@ -18,6 +19,11 @@ def main():
     target_size = (224, 224)  
     num_classes = 30  
     
+    # Encode labels to integers
+    label_encoder = LabelEncoder()
+    train_labels_encoded = label_encoder.fit_transform(train_labels)
+    test_labels_encoded = label_encoder.transform(test_labels)
+
     # Load and preprocess data
     train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
         train_folder, test_folder, train_annotations, test_annotations, target_size)

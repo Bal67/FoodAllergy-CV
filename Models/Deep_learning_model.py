@@ -4,9 +4,10 @@ from sklearn.preprocessing import LabelEncoder
 from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from data_preprocessing import load_and_preprocess_data
 
 def main():
@@ -43,36 +44,49 @@ def main():
         
     # Data augmentation
     datagen = ImageDataGenerator(
-        rotation_range=20,
+        rotation_range=30,  # increased
         width_shift_range=0.2,
         height_shift_range=0.2,
-        horizontal_flip=True)
+        horizontal_flip=True,
+        zoom_range=0.2,  # added
+        shear_range=0.2)  # added
 
     # Build the model
     model = Sequential([
         Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
+        BatchNormalization(),  # added
         MaxPooling2D((2, 2)),
         Conv2D(64, (3, 3), activation='relu'),
+        BatchNormalization(),  # added
         MaxPooling2D((2, 2)),
         Conv2D(128, (3, 3), activation='relu'),
+        BatchNormalization(),  # added
         MaxPooling2D((2, 2)),
-        Conv2D(128, (3, 3), activation='relu'),  # added layer
-        MaxPooling2D((2, 2)),  # added layer
+        Conv2D(128, (3, 3), activation='relu'),
+        BatchNormalization(),  # added
+        MaxPooling2D((2, 2)),
         Flatten(),
-        Dropout(0.5),  # added layer
-        Dense(512, activation='relu'),  # added layer
+        Dropout(0.5),
+        Dense(512, activation='relu'),
+        BatchNormalization(),  # added
+        Dropout(0.5),  # added
         Dense(num_classes, activation='softmax')
     ])
 
     # Compile the model
     model.compile(loss='categorical_crossentropy',
-                optimizer=Adam(lr=0.001),  # adjusted learning rate
+                optimizer=Adam(lr=0.001),
                 metrics=['accuracy'])
+
+    # Callbacks
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
+    reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.0001)
 
     # Fit the model
     history = model.fit(datagen.flow(X_train, y_train, batch_size=32),
-                        epochs=50,  # increased epochs
-                        validation_data=(X_val, y_val))
+                        epochs=100,  # increased epochs
+                        validation_data=(X_val, y_val),
+                        callbacks=[early_stopping, reduce_lr])
         
     # Evaluate the model on the test set
     test_loss, test_accuracy = model.evaluate(test_images, test_labels_categorical)

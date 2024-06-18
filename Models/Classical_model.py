@@ -3,9 +3,10 @@ import numpy as np
 import pandas as pd
 from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.svm import SVC  # Import SVC from sklearn.svm
+from sklearn.svm import SVC
 from sklearn.metrics import accuracy_score, f1_score
 from data_preprocessing import load_and_preprocess_data
+from keras.preprocessing.image import ImageDataGenerator
 
 # Load the dataset
 train_images = '/content/drive/My Drive/FoodAllergyData/train'
@@ -19,6 +20,17 @@ target_size = (64, 64)
 # Load and preprocess data
 train_images, train_labels, test_images, test_labels, _, _ = load_and_preprocess_data(
     train_images, test_images, train_labels, test_labels, target_size)
+
+# Data Augmentation
+datagen = ImageDataGenerator(
+    rotation_range=20,
+    width_shift_range=0.2,
+    height_shift_range=0.2,
+    shear_range=0.2,
+    zoom_range=0.2,
+    horizontal_flip=True,
+    fill_mode='nearest'
+)
 
 # Flatten or reshape images into 2D arrays
 train_images_flat = train_images.reshape(train_images.shape[0], -1)
@@ -38,14 +50,15 @@ test_images_scaled = scaler.transform(test_images_flat)
 param_grid = {
     'C': [0.001, 0.01, 0.1, 1, 10],
     'gamma': [0.1, 1, 10],
-    'kernel': ['linear', 'rbf', 'poly', 'sigmoid']
+    'kernel': ['linear', 'rbf', 'poly', 'sigmoid'],
+    'class_weight': [None, 'balanced']
 }
 
 # Create SVM classifier
 svm_clf = SVC()
 
 # Perform grid search with cross-validation
-grid_search = GridSearchCV(svm_clf, param_grid, cv=3, scoring='accuracy', verbose=2)
+grid_search = GridSearchCV(svm_clf, param_grid, cv=5, scoring='accuracy', verbose=2)
 grid_search.fit(train_images_scaled, train_labels_enc)
 
 # Print best parameters and best score
@@ -54,7 +67,6 @@ print("Best Cross-validation Accuracy:", grid_search.best_score_)
 
 # Get the best model from grid search
 best_svm_clf = grid_search.best_estimator_
-
 
 # Predictions on training set
 train_pred = best_svm_clf.predict(train_images_scaled)

@@ -5,7 +5,7 @@ from keras.utils import to_categorical
 from sklearn.model_selection import train_test_split
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout, BatchNormalization
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers import Adam, RMSprop, SGD
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
 from tensorflow.keras.regularizers import l2
@@ -46,12 +46,12 @@ def main():
         
     # Data augmentation
     datagen = ImageDataGenerator(
-        rotation_range=30,  # increased
-        width_shift_range=0.2,
-        height_shift_range=0.2,
+        rotation_range=20,  # reduced
+        width_shift_range=0.1,  # reduced
+        height_shift_range=0.1,  # reduced
         horizontal_flip=True,
-        zoom_range=0.2,  # added
-        shear_range=0.2)  # added
+        zoom_range=0.1,  # reduced
+        shear_range=0.1)  # reduced
 
     # Use VGG16 as a base model
     base_model = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
@@ -68,9 +68,9 @@ def main():
         Dense(num_classes, activation='softmax')
     ])
 
-    # Compile the model
+    # Compile the model with a different optimizer
     model.compile(loss='categorical_crossentropy',
-                optimizer=Adam(lr=0.001),
+                optimizer=RMSprop(learning_rate=0.001),  # Changed optimizer
                 metrics=['accuracy'])
 
     # Callbacks
@@ -88,9 +88,9 @@ def main():
     for layer in base_model.layers[:-4]:
         layer.trainable = False
 
-    # Recompile the model with a lower learning rate
+    # Recompile the model with a lower learning rate and different optimizer
     model.compile(loss='categorical_crossentropy',
-                optimizer=Adam(lr=1e-5),
+                optimizer=SGD(learning_rate=1e-5, momentum=0.9),  # Changed optimizer
                 metrics=['accuracy'])
 
     # Fit the model again with fine-tuning
@@ -105,3 +105,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+

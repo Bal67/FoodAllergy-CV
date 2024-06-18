@@ -3,7 +3,7 @@ import cv2
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.metrics import accuracy_score
 from sklearn.model_selection import RandomizedSearchCV
-from Scripts.data_preprocessing import load_and_preprocess_data
+from data_preprocessing import load_and_preprocess_data
 from skimage.feature import local_binary_pattern
 from skimage.color import rgb2gray
 from skimage.filters import sobel

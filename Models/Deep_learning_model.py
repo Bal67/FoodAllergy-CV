@@ -1,10 +1,11 @@
-# src/deep_learning.py - Neural Networks
 import numpy as np
-from tensorflow.keras.utils import to_categorical
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense
-from sklearn.metrics import accuracy_score
+import cv2
 from sklearn.preprocessing import LabelEncoder
+from keras.utils import to_categorical
+from sklearn.model_selection import train_test_split
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropout
+from tensorflow.keras.optimizers import Adam
 from data_preprocessing import load_and_preprocess_data
 
 def main():
@@ -32,29 +33,36 @@ def main():
     train_labels = to_categorical(train_labels, num_classes)
     test_labels = to_categorical(test_labels, num_classes)
     
-    # Create a CNN model
+    #Normalize image data
+    train_images = np.array(train_images) / 255.0
+    test_images = np.array(test_images) / 255.0
+    
+    # Split the data into training and validation sets
+    X_train, X_val, y_train, y_val = train_test_split(train_images, train_labels_categorical, test_size=0.2, random_state=42)
+    
+    # Build the model
     model = Sequential([
-        Conv2D(32, (3, 3), activation='relu', input_shape=(target_size[0], target_size[1], 3)),
+        Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
+        MaxPooling2D((2, 2)),
+        Conv2D(64, (3, 3), activation='relu'),
+        MaxPooling2D((2, 2)),
+        Conv2D(128, (3, 3), activation='relu'),
         MaxPooling2D((2, 2)),
         Flatten(),
-        Dense(128, activation='relu'),
+        Dense(512, activation='relu'),
+        Dropout(0.5),
         Dense(num_classes, activation='softmax')
     ])
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     
-    # Train model
-    model.fit(train_images, train_labels, epochs=10, validation_data=(test_images, test_labels))
+    # Compile the model
+    model.compile(optimizer=Adam(learning_rate=0.001), loss='categorical_crossentropy', metrics=['accuracy'])
     
-    # Save model
-    model.save(model_save_path)
+    # Train the model
+    model.fit(X_train, y_train, epochs=10, batch_size=32, validation_data=(X_val, y_val))
     
-    # Evaluate model
-    predictions = model.predict(test_images)
-    predictions = np.argmax(predictions, axis=1)
-    test_labels = np.argmax(test_labels, axis=1)
-    accuracy = accuracy_score(test_labels, predictions)
-    print(f'Deep Learning Model Accuracy: {accuracy}')
-    
+    # Evaluate the model on the test set
+    test_loss, test_accuracy = model.evaluate(test_images, test_labels_categorical)
+    print(f'Test Accuracy: {test_accuracy}')
+
 if __name__ == "__main__":
     main()
-

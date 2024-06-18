@@ -46,8 +46,7 @@ def main():
     test_annotations = '/content/drive/My Drive/FoodAllergyData/FoodAllergy-CV/Data/annotations_test.csv' 
     
     # Load and preprocess the data
-    X_train, y_train = load_and_preprocess_data(train_folder, train_annotations, extract_features)
-    X_test, y_test = load_and_preprocess_data(test_folder, test_annotations, extract_features)
+    X_train, y_train = load_and_preprocess_data(train_folder, train_annotations, test_folder, test_annotations, extract_features, target_size)
     
     target_size = (224, 224)
 
@@ -62,6 +61,7 @@ def main():
     random_search.fit(X_train, y_train)
 
     # Evaluate the model
+    X_test, y_test = load_and_preprocess_data(test_folder, test_annotations, test_folder, test_annotations, extract_features, target_size)
     y_pred = random_search.predict(X_test)
     accuracy = accuracy_score(y_test, y_pred)
     print(f'Naive Accuracy: {accuracy}')

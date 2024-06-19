@@ -5,6 +5,7 @@ from keras.models import Model
 from keras.layers import Dense, Flatten, Dropout
 from keras.optimizers import Adam
 from keras.callbacks import EarlyStopping
+import os
 from sklearn.metrics import accuracy_score, f1_score
 
 # Paths to the dataset

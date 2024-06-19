@@ -8,8 +8,6 @@ from tensorflow.keras.layers import Conv2D, MaxPooling2D, Flatten, Dense, Dropou
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.callbacks import EarlyStopping, ReduceLROnPlateau
-from tensorflow.keras.regularizers import l2
-from tensorflow.keras.applications import VGG16
 from data_preprocessing import load_and_preprocess_data
 
 def main():
@@ -53,54 +51,43 @@ def main():
         zoom_range=0.2,  # added
         shear_range=0.2)  # added
 
-    # Use VGG16 as a base model
-    base_model = VGG16(weights='imagenet', include_top=False, input_shape=(224, 224, 3))
-    base_model.trainable = False  # Freeze the base model
-
     # Build the model
     model = Sequential([
-        Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3), kernel_regularizer=l2(0.001)),  # added L2 regularization
+        Conv2D(32, (3, 3), activation='relu', input_shape=(224, 224, 3)),
+        BatchNormalization(),  # added
         MaxPooling2D((2, 2)),
-        Dropout(0.25),  # added dropout
-        Conv2D(64, (3, 3), activation='relu', kernel_regularizer=l2(0.001)),  # added L2 regularization
+        Conv2D(64, (3, 3), activation='relu'),
+        BatchNormalization(),  # added
         MaxPooling2D((2, 2)),
-        Dropout(0.25),  # added dropout
+        Conv2D(128, (3, 3), activation='relu'),
+        BatchNormalization(),  # added
+        MaxPooling2D((2, 2)),
+        Conv2D(128, (3, 3), activation='relu'),
+        BatchNormalization(),  # added
+        MaxPooling2D((2, 2)),
         Flatten(),
-        Dense(128, activation='relu', kernel_regularizer=l2(0.001)),  # added L2 regularization
-        Dropout(0.5),  # added dropout
+        Dropout(0.5),
+        Dense(512, activation='relu'),
+        BatchNormalization(),  # added
+        Dropout(0.5),  # added
         Dense(num_classes, activation='softmax')
-])
+    ])
+
     # Compile the model
     model.compile(loss='categorical_crossentropy',
                 optimizer=Adam(lr=0.001),
                 metrics=['accuracy'])
 
     # Callbacks
-    early_stopping = EarlyStopping(monitor='val_loss', patience=15, restore_best_weights=True)
+    early_stopping = EarlyStopping(monitor='val_loss', patience=10, restore_best_weights=True)
     reduce_lr = ReduceLROnPlateau(monitor='val_loss', factor=0.2, patience=5, min_lr=0.0001)
 
     # Fit the model
     history = model.fit(datagen.flow(X_train, y_train, batch_size=32),
-                        epochs=100,
+                        epochs=10,  
                         validation_data=(X_val, y_val),
                         callbacks=[early_stopping, reduce_lr])
         
-    # Unfreeze some layers of the base model and fine-tune
-    base_model.trainable = True
-    for layer in base_model.layers[:-4]:
-        layer.trainable = False
-
-    # Recompile the model with a lower learning rate
-    model.compile(loss='categorical_crossentropy',
-                optimizer=Adam(lr=1e-5),
-                metrics=['accuracy'])
-
-    # Fit the model again with fine-tuning
-    history = model.fit(datagen.flow(X_train, y_train, batch_size=32),
-                        epochs=50,
-                        validation_data=(X_val, y_val),
-                        callbacks=[early_stopping, reduce_lr])
-    
     # Evaluate the model on the test set
     test_loss, test_accuracy = model.evaluate(test_images, test_labels_categorical)
     print(f'Deep Learning Test Accuracy: {test_accuracy}')
